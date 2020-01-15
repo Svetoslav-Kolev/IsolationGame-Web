@@ -1,0 +1,56 @@
+﻿@{
+    ViewData["Title"] = "PlayAsGuest";
+}
+@model MatrixViewModel
+<h2>@ViewData["Title"]</h2>
+<h3>@ViewData["Message"]</h3>
+
+<h1 style="margin:0 auto">You are playing as Guest</h1>
+<script>
+    function move(currObject, targetObj) {
+
+        console.log(currObject.id)
+     
+        //check if in range
+        // check if available
+    }
+
+
+</script>
+@if (Model.playerOneTurn == true)
+{
+    <h1>It's Player One's Turn</h1>
+}
+else
+{
+    <h1>It's Player Two's Turn</h1>
+}
+<table border="1" style="margin:0 auto;  table-layout: fixed ">
+    @for (int i = 0; i < Model.Field.GetLength(0); i++)
+    {
+        <tr>
+            @for (int j = 0; j < Model.Field.GetLength(1); j++)
+            {
+                @if (j == Model.Field.GetLength(0) / 2 && (i == 0 || i == Model.Field.GetLength(0) - 1))
+                {
+                    if (i == 0)
+                    {
+                        <td id="@(i + "_" + j)" onclick="move(this.id,@Model.Serialize())" style="width: 30px ; height:30px">P1</td>
+                    }
+                    else
+                    {
+                        <td id="@(i + "_" + j)" onclick="move(this.id,@Model.Serialize())" style="width: 30px ; height:30px">P2</td>
+                    }
+
+                }
+                else
+                {
+                    <td id="@(i + "_" + j)" onclick="move(this,@Model.Serialize())" style="width: 30px ; height:30px">*</td>
+                }
+
+            }
+        </tr>
+    }
+
+</table>
+

@@ -1,0 +1,37 @@
+﻿
+@{
+    ViewData["Title"] = "History";
+}
+@using Microsoft.AspNetCore.Http
+@using IsolationGame.Extensions
+@inject IHttpContextAccessor HttpContextAccessor
+@model HistoryViewMovel
+
+<h2>History</h2>
+
+@foreach (var game in Model.games)
+{
+    @if (Model.userId == game.PlayerOneId)
+    {
+        @if (game.CurrentPlayerAndTurn == 5)
+        {
+            <h2>You Won Against @Model.enemyUsernames[game.Id.ToString()]</h2>
+        }
+        else if (game.CurrentPlayerAndTurn == 6)
+        {
+            <h2>You Lost Against @Model.enemyUsernames[game.Id.ToString()]</h2>
+        }
+    }
+    else
+    {
+        @if (game.CurrentPlayerAndTurn == 5)
+        {
+            <h2>You Lost Against @Model.enemyUsernames[game.Id.ToString()]</h2>
+        }
+        else if (game.CurrentPlayerAndTurn == 6)
+        {
+            <h2>You Won Against @Model.enemyUsernames[game.Id.ToString()]</h2>
+        }
+    }
+
+}

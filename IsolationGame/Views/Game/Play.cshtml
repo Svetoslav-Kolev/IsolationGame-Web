@@ -1,0 +1,125 @@
+﻿@{
+    ViewData["Title"] = "Game";
+}
+@using Microsoft.AspNetCore.Http
+@using IsolationGame.Extensions
+@inject IHttpContextAccessor HttpContextAccessor
+
+<h1>@ViewData["CurrentPlayerId"]</h1>
+<h1>@ViewData["GameId"]</h1>
+<h1>@ViewData["PlayerOneOrTwo"]</h1>
+<h2>@ViewData["Title"]</h2>
+<h3>@ViewData["Message"]</h3>
+
+<script src="https://code.jquery.com/jquery-3.4.1.min.js"
+        integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
+        crossorigin="anonymous"></script>
+<script>
+    (function update() {
+        $.ajax({
+            url: '/Game/Update',
+            success: function (data) {             
+                drawTable(data.field)
+                displayTurn(data.currentPlayerAndTurn)
+                checkGameStatus(data)
+                if (data.currentPlayerAndTurn >= 5) {
+                    redirectToEndGame();
+                }
+            },
+            complete: function () {
+                setTimeout(update, 1000);
+                $(document).ready(function () {
+                    $(".cell").click(function () {
+                        $.get({
+                            url: '/Game/Action',
+                            data:
+                            {
+                                coordinates: $(event.target).attr("id")
+                            }
+                        })
+                    });
+                })
+            }
+        });
+    })();
+    window.onbeforeunload = function () {
+        $.ajax({
+            url: '/Home/DeleteInactiveGames',
+            type: 'GET',
+            success: function (result) {
+            },
+            error: function (result) {
+            }
+        });
+    };
+    function redirectToEndGame() {
+        window.location.href = "/Game/EndGame";
+    }
+
+    function checkGameStatus(game) {
+        var playerOneIdCheck = game.playerOneId;
+        var playerTwoIdCheck = game.playerTwoId;
+        var statusLabel = $('<h1>');
+        if (playerOneIdCheck == null || playerTwoIdCheck == null) {
+            statusLabel.text("Game has yet to Begin - waiting for opponent to connect.");
+        } else {
+            statusLabel.text("Game is active!");
+        }
+        $('#game_status').html(statusLabel);
+    }
+
+    function drawTable(field) {
+        var gameField = JSON.parse(field);
+        var table = $('<table>').css({ "margin": "0 auto", "table-layout": "fixed" }).attr("border", "1");
+        for (i = 0; i < gameField.length; i++) {
+            var row = $('<tr>');
+            for (var j = 0; j < gameField.length; j++) {
+                var col = $('<td>').attr("id", `${i}_${j}`).css({ "width": "30px", "height": "30px", }).addClass("cell")
+                if (gameField[i][j] == 0) {
+                    col.text(" ");
+                } else if (gameField[i][j] == 1) {
+                    col.text("X");
+                } else if (gameField[i][j] == 2) {
+                    col.text("P1");
+                }
+                else if (gameField[i][j] == 3) {
+                    col.text("P2");
+                }
+                row.append(col);
+            }
+            table.append(row);
+        }
+
+        $('#game_field').html(table);
+    }
+    function displayTurn(turn) {
+        var currTurn = JSON.parse(turn);
+        var turnLabel = $('<h1>');
+        if (currTurn == 0) {
+            turnLabel.text("It's Player One's Move Phase");
+        } else if (currTurn == 1) {
+            turnLabel.text("It's Player One's Block Phase");
+        }
+        else if (currTurn == 2) {
+            turnLabel.text("It's Player Two's Move Phase");
+        } else {
+            turnLabel.text("It's Player Two's Block Phase");
+        }
+        $('#curr_turn').html(turnLabel);
+    }
+</script>
+
+<div id="game_field">
+
+</div>
+<div id="curr_turn">
+
+</div>
+<div id="game_status">
+
+</div>
+
+
+
+
+

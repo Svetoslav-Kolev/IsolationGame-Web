@@ -1,0 +1,19 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+
+
+<h1>Menu</h1>
+@if (User.Identity.Name == null)
+{
+    <a asp-area="Identity" asp-page="/Account/Login"><h1>Play Game</h1></a>
+}
+else
+{
+    <a href="/Game/Play"><h1>Play Game</h1></a>
+
+    <a href="/Home/History"><h1>History</h1></a>
+}
+
+
+<a href="/Home/HowToPlay"><h1>How to play</h1></a>
