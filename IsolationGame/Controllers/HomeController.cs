@@ -39,6 +39,7 @@ namespace IsolationGame.Controllers
         }
         public IActionResult History()
         {
+        //Shows the history of the current player only for games that resulted in a win or loss
             HistoryViewMovel hvm = new HistoryViewMovel();
             string userId = User.FindFirst(ClaimTypes.NameIdentifier).Value;
             Dictionary<string, string> enemyUsernames = new Dictionary<string, string>();
@@ -66,6 +67,7 @@ namespace IsolationGame.Controllers
         }
         public void DeleteInactiveGames()
         {
+        //Deletes the game from the database if no other player connected to it and the current player decided to exit
             string yourId = User.FindFirst(ClaimTypes.NameIdentifier).Value;
             foreach (var game in _context.Games.Where(g => (g.PlayerOneId == yourId && g.PlayerTwoId == null) || (g.PlayerTwoId == yourId && g.PlayerOneId == null)))
             {        
