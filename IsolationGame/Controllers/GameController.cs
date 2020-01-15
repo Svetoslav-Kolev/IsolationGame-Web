@@ -28,6 +28,8 @@ namespace IsolationGame.Controllers
         }
         public IActionResult Play()
         {
+            //Method called when people press play , If there are available games the current player connects to one of them 
+            //If there are no available games , player creates a new game and enters the queue to wait for an opponent
             ViewData["Message"] = "Game";
 
             int queueCount = _context.Queue.Count();
@@ -77,13 +79,15 @@ namespace IsolationGame.Controllers
 
             MatrixViewModel mvm = new MatrixViewModel(7);
             ViewData["Message"] = "Game";
-            IdentityUser guestUser = new IdentityUser();
+
             
 
-            return View(mvm);
+            return new EmptyResult();
         }
         public IActionResult Action(string coordinates)
         {
+            //Main Action method that is executed every time a player clicks on the field , it checks whose turn it is , and if it is the current user's turn 
+            // it executes the current action for that turn (either A move action or a block action)
             bool yourTurn = CheckTurn();
 
             if (yourTurn == true)
@@ -131,6 +135,7 @@ namespace IsolationGame.Controllers
         }
         public bool Move(string coordinates)
         {
+        //Logic for the move action of the game - checks whether the coordinates given are available and in range and if they are, moves the current player to them
             MatrixViewModel mvm = new MatrixViewModel(7);
 
             var game = _context.Games.Where(g => g.Id.ToString() == HttpContext.Session.GetString("GameId")).FirstOrDefault();
@@ -215,6 +220,7 @@ namespace IsolationGame.Controllers
         }
         private bool InRangeToMove(MatrixViewModel game, string playerCoord, string coordsToMove)
         {
+        //checks whether the coordinates given are in range compared to where the current player is and wants to go
             var gameInContext = _context.Games.Where(g => g.Id.ToString() == HttpContext.Session.GetString("GameId")).FirstOrDefault();
             game.Field = JsonConvert.DeserializeObject<int[,]>(gameInContext.Field);
             int[] playerCoordinates = playerCoord.Split('_').Select(int.Parse).ToArray();
@@ -240,7 +246,7 @@ namespace IsolationGame.Controllers
         }
         private bool CheckIfLost(MatrixViewModel game, string playerCoord)
         {
-
+            //checks if the player's coordinates are surrounded by non available cells
             var gameInContext = _context.Games.Where(g => g.Id.ToString() == HttpContext.Session.GetString("GameId")).FirstOrDefault();
             game.Field = JsonConvert.DeserializeObject<int[,]>(gameInContext.Field);
             int[] playerCoordinates = playerCoord.Split('_').Select(int.Parse).ToArray();
@@ -261,6 +267,7 @@ namespace IsolationGame.Controllers
         }
         private bool InRange(MatrixViewModel game, int x, int y)
         {
+        //checks if that cell is outside the matrix
             if (x < 0 || x >= game.Field.GetLength(0) || y < 0 || y >= game.Field.GetLength(1))
             {
                 return false;
@@ -270,6 +277,7 @@ namespace IsolationGame.Controllers
         }
         public bool CheckTurn()
         {
+        //checks if it is the current user's turn currently 
             bool yourTurn = false;
             var game = _context.Games.Where(g => g.Id.ToString() == HttpContext.Session.GetString("GameId")).FirstOrDefault();
             if (game.PlayerOneId == User.FindFirst(ClaimTypes.NameIdentifier).Value)
@@ -296,6 +304,7 @@ namespace IsolationGame.Controllers
         }
         public IActionResult BlockField(string coordinates)
         {
+         //Executes the Block part of the move , it checks whether a field is available and blocks it if it is , after which it checks whether the enemy player has lost the match
             MatrixViewModel mvm = new MatrixViewModel(7);
             var game = _context.Games.Where(g => g.Id.ToString() == HttpContext.Session.GetString("GameId")).FirstOrDefault();
             var field = JsonConvert.DeserializeObject<int[,]>(game.Field);
@@ -345,6 +354,7 @@ namespace IsolationGame.Controllers
         }
         public bool PossibleToBlock(int[,] field, string coordinates)
         {
+        //checks if the coordinates of the given cell are available to be blocked
             string[] coords = coordinates.Split('_').ToArray();
             int x = int.Parse(coords[0]);
             int y = int.Parse(coords[1]);
@@ -357,6 +367,7 @@ namespace IsolationGame.Controllers
         }
         public IActionResult EndGame()
         {
+        //End game method which takes you to another page and informs you on whether you won or lost , also gives you a chance to rematch with the same player or return to the menu
             GameField game = _context.Games.Where(g => g.Id.ToString() == HttpContext.Session.GetString("GameId")).FirstOrDefault();
             if (game.PlayerOneId == User.FindFirst(ClaimTypes.NameIdentifier).Value)
             {
@@ -386,6 +397,7 @@ namespace IsolationGame.Controllers
         }
         public IActionResult Rematch()
         {
+        //rematches the current players if both of them agree
             GameField game = _context.Games.Where(g => g.Id.ToString() == HttpContext.Session.GetString("GameId")).FirstOrDefault();
             UserInQueue queuedUser = _context.Queue.Where(g => g.UserId == getOppenentId(game)).FirstOrDefault();
             if (queuedUser == null)
@@ -414,11 +426,13 @@ namespace IsolationGame.Controllers
         }
         public JsonResult Update()
         {
+        //sends constant update to the players about the field and the turns
             var game = _context.Games.Where(g => g.Id.ToString() == HttpContext.Session.GetString("GameId")).FirstOrDefault();
             return Json(game);
         }
         private string getOppenentId(GameField game)
         {
+        //gets the id of the opponent player
             if (game.PlayerTwoId != User.FindFirst(ClaimTypes.NameIdentifier).Value)
             {
                 return game.PlayerTwoId;
@@ -430,6 +444,7 @@ namespace IsolationGame.Controllers
         }
         private GameField CreateGame()
         {
+         //creates a new game and enters it into a queue to wait for an opponent
             MatrixViewModel mvm = new MatrixViewModel(7);
             GameField currGame = new GameField();
             currGame.Id = new Guid();
